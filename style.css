@@ -1,0 +1,123 @@
+body {
+    font-family: Arial;
+    background: linear-gradient(to right, #e3f2fd, #fce4ec);
+    margin: 0;
+}
+
+/* Title */
+.chat-title {
+    text-align: center;
+    background: #681396;
+    color: white;
+    padding: 12px;
+    margin: 0;
+    font-size: 18px;
+    letter-spacing: 1px;
+}
+
+/* Chat box */
+.chat-box {
+    height: 400px;
+    padding: 10px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+
+    background-color: #eef5f9;
+    background-image: url("https://www.transparenttextures.com/patterns/connected.png");
+}
+
+/* Input area */
+.input-area {
+    display: flex;
+    padding: 10px;
+    background: white;
+}
+
+input {
+    flex: 1;
+    padding: 10px;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+}
+
+button {
+    margin-left: 10px;
+    padding: 10px 15px;
+    background: #2eb42e;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+}
+
+/* Messages */
+.message {
+    max-width: 70%;
+    padding: 10px;
+    margin: 6px;
+    border-radius: 12px;
+    font-size: 14px;
+}
+
+.user {
+    background: #c8e6c9;
+    align-self: flex-end;
+}
+
+.ai {
+    background: #ffffff;
+    align-self: flex-start;
+}
+
+/* Intro message */
+.intro-msg {
+    background: #fff3e0;
+    color: #e65100;
+    font-size: 12px;
+    text-align: center;
+    padding: 6px;
+    margin: 5px;
+    border-radius: 8px;
+}
+
+/* Popup */
+.popup {
+    position: fixed;
+    top: 30%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #ffffff;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+}
+
+.hidden {
+    display: none;
+}/* Smooth transition */
+input {
+    transition: all 0.3s ease;
+}
+/* Smooth transition */
+input {
+    transition: all 0.3s ease;
+}
+
+/* Safe - Green */
+.safe {
+    background-color: #e8f5e9;   /* light green */
+    border: 2px solid #2e7d32;   /* darker green */
+}
+
+/* Personal - Yellow */
+.personal {
+    background-color: #fff8e1;   /* light yellow */
+    border: 2px solid #f57c00;   /* darker orange */
+}
+
+/* Sensitive - Red */
+.sensitive {
+    background-color: #ffebee;   /* light red */
+    border: 2px solid #c62828;   /* darker red */
+}
