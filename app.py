@@ -3,14 +3,22 @@ import re
 
 app = Flask(__name__)
 
-# Detect sensitive info like emails
+# Regex for sensitive/personal detection
 EMAIL_REGEX = re.compile(r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+')
+PHONE_REGEX = re.compile(r'\b\d{8,15}\b')  # Basic phone number pattern
+PASSWORD_REGEX = re.compile(r'password|pass|pwd|1234', re.IGNORECASE)
 
 def check_sensitivity(message):
-    """Return message sensitivity class: safe, personal, sensitive"""
-    if EMAIL_REGEX.search(message):
+    """
+    Detect message sensitivity:
+    - 'sensitive' if email or password patterns
+    - 'personal' if phone number
+    - 'safe' otherwise
+    """
+    if EMAIL_REGEX.search(message) or PASSWORD_REGEX.search(message):
         return "sensitive"
-    # Add other rules for personal info here if needed
+    if PHONE_REGEX.search(message):
+        return "personal"
     return "safe"
 
 @app.route("/")
@@ -21,14 +29,14 @@ def index():
 def send_message():
     data = request.json
     message = data.get("message", "")
-    
+
     sensitivity = check_sensitivity(message)
     
-    # Ask permission for sensitive info
+    # Frontend must confirm permission for sensitive messages
     allow = True
     if sensitivity == "sensitive":
-        allow = data.get("allow", False)  # Frontend confirms permission
-    
+        allow = data.get("allow", False)
+
     response = {
         "message": message if allow else "[REDACTED]",
         "sensitivity": sensitivity if allow else "safe"
@@ -36,4 +44,5 @@ def send_message():
     return jsonify(response)
 
 if __name__ == "__main__":
+    # Debug mode on for local testing; set debug=False for production
     app.run(debug=True)
