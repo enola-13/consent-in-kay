@@ -11,7 +11,7 @@
     <h2 class="chat-title">KAY AI Chat</h2>
     <div id="chatBox" class="chat-box">
 
-        <!-- Intro message INSIDE chat -->
+        <!-- Intro message -->
         <div class="intro-msg">
             🔐 KAY Consent ON <br>
             🟡 Personal | 🔴 Sensitive data will be flagged
@@ -36,59 +36,8 @@
         <button onclick="closePopup()">Deny</button>
     </div>
 
-    <script>
-        const chatBox = document.getElementById("chatBox");
-        const messageInput = document.getElementById("messageInput");
-        const popup = document.getElementById("popup");
-        const popupText = document.getElementById("popupText");
+    <!-- Script -->
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 
-        let pendingMessage = "";
-
-        function appendMessage(message, type) {
-            const msgDiv = document.createElement("div");
-            msgDiv.className = `message ${type}`;
-            msgDiv.textContent = message;
-            chatBox.appendChild(msgDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        function handleSend() {
-            const message = messageInput.value.trim();
-            if (!message) return;
-
-            // Check for sensitive info (emails)
-            const sensitiveRegex = /[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+/;
-            if (sensitiveRegex.test(message)) {
-                pendingMessage = message;
-                popupText.textContent = "Sensitive information detected! Allow sharing?";
-                popup.classList.remove("hidden");
-            } else {
-                sendToServer(message, "safe");
-            }
-
-            messageInput.value = "";
-        }
-
-        function confirmSend() {
-            sendToServer(pendingMessage, "sensitive");
-            pendingMessage = "";
-            popup.classList.add("hidden");
-        }
-
-        function closePopup() {
-            pendingMessage = "";
-            popup.classList.add("hidden");
-        }
-
-        async function sendToServer(message, type) {
-            const response = await fetch("/send_message", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message, allow: type === "sensitive" })
-            }).then(res => res.json());
-
-            appendMessage(response.message, response.sensitivity);
-        }
-    </script>
 </body>
 </html>
