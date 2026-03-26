@@ -3,47 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <title>Consent Chat</title>
-    <style>
-        #chat-box { width: 500px; height: 400px; border: 1px solid #ccc; overflow-y: scroll; padding: 10px; }
-        .message { margin: 5px 0; padding: 5px; border-radius: 4px; }
-        .green { background-color: #d4edda; }
-        .yellow { background-color: #fff3cd; }
-        .red { background-color: #f8d7da; }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Consent Chat</h1>
-    <div id="chat-box"></div>
-    <input type="text" id="message-input" placeholder="Type your message..." style="width:400px;">
-    <button onclick="sendMessage()">Send</button>
+    <div class="chat-title">Consent Chat</div>
+    <div class="chat-box" id="chat-box">
+        <div class="intro-msg">Welcome! Messages with sensitive info will ask for permission before showing.</div>
+    </div>
+    <div class="input-area">
+        <input type="text" id="message-input" placeholder="Type your message...">
+        <button onclick="sendMessage()">Send</button>
+    </div>
 
     <script>
-        function sendMessage() {
+        async function sendMessage() {
             const input = document.getElementById("message-input");
-            const message = input.value;
+            const message = input.value.trim();
             if (!message) return;
 
-            fetch("/send_message", {
+            let allow = false;
+
+            // Frontend sensitive check (emails)
+            if (/[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+/.test(message)) {
+                allow = confirm("Sensitive information detected! Allow sharing?");
+            }
+
+            const response = await fetch("/send_message", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.sensitivity === "red") {
-                    if (!confirm("Sensitive information detected! Do you allow sharing?")) {
-                        input.value = "";
-                        return;
-                    }
-                }
-                const chatBox = document.getElementById("chat-box");
-                const msgDiv = document.createElement("div");
-                msgDiv.className = `message ${data.sensitivity}`;
-                msgDiv.textContent = data.message;
-                chatBox.appendChild(msgDiv);
-                chatBox.scrollTop = chatBox.scrollHeight;
-                input.value = "";
-            });
+                body: JSON.stringify({ message, allow })
+            }).then(res => res.json());
+
+            const chatBox = document.getElementById("chat-box");
+            const msgDiv = document.createElement("div");
+            msgDiv.className = `message ${response.sensitivity}`;
+            msgDiv.textContent = response.message;
+            chatBox.appendChild(msgDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            input.value = "";
         }
     </script>
 </body>
