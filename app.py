@@ -3,19 +3,15 @@ import re
 
 app = Flask(__name__)
 
-# Regex to detect sensitive information like emails
+# Detect sensitive info like emails
 EMAIL_REGEX = re.compile(r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+')
 
 def check_sensitivity(message):
-    """
-    Check message for sensitive info and return status:
-    'green' - safe
-    'yellow' - caution
-    'red' - sensitive
-    """
+    """Return message sensitivity class: safe, personal, sensitive"""
     if EMAIL_REGEX.search(message):
-        return "red"
-    return "green"
+        return "sensitive"
+    # Add other rules for personal info here if needed
+    return "safe"
 
 @app.route("/")
 def index():
@@ -23,11 +19,19 @@ def index():
 
 @app.route("/send_message", methods=["POST"])
 def send_message():
-    message = request.json.get("message", "")
+    data = request.json
+    message = data.get("message", "")
+    
     sensitivity = check_sensitivity(message)
+    
+    # Ask permission for sensitive info
+    allow = True
+    if sensitivity == "sensitive":
+        allow = data.get("allow", False)  # Frontend confirms permission
+    
     response = {
-        "message": message,
-        "sensitivity": sensitivity
+        "message": message if allow else "[REDACTED]",
+        "sensitivity": sensitivity if allow else "safe"
     }
     return jsonify(response)
 
