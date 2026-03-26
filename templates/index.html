@@ -1,47 +1,93 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Consent Chat</title>
+    <title>KAY Chat</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body>
-    <div class="chat-title">Consent Chat</div>
-    <div class="chat-box" id="chat-box">
-        <div class="intro-msg">Welcome! Messages with sensitive info will ask for permission before showing.</div>
+
+    <!-- Chat Box -->
+    <h2 class="chat-title">KAY AI Chat</h2>
+    <div id="chatBox" class="chat-box">
+
+        <!-- Intro message INSIDE chat -->
+        <div class="intro-msg">
+            🔐 KAY Consent ON <br>
+            🟡 Personal | 🔴 Sensitive data will be flagged
+        </div>
+        <div class="message ai">
+            👋 Hi, I’m KAY!  
+            I’ll help you stay safe while chatting!
+        </div>
+
     </div>
+
+    <!-- Input Area -->
     <div class="input-area">
-        <input type="text" id="message-input" placeholder="Type your message...">
-        <button onclick="sendMessage()">Send</button>
+        <input type="text" id="messageInput" placeholder="Ask me something" />
+        <button onclick="handleSend()">Send</button>
+    </div>
+
+    <!-- Popup -->
+    <div id="popup" class="popup hidden">
+        <p id="popupText"></p>
+        <button onclick="confirmSend()">Allow</button>
+        <button onclick="closePopup()">Deny</button>
     </div>
 
     <script>
-        async function sendMessage() {
-            const input = document.getElementById("message-input");
-            const message = input.value.trim();
+        const chatBox = document.getElementById("chatBox");
+        const messageInput = document.getElementById("messageInput");
+        const popup = document.getElementById("popup");
+        const popupText = document.getElementById("popupText");
+
+        let pendingMessage = "";
+
+        function appendMessage(message, type) {
+            const msgDiv = document.createElement("div");
+            msgDiv.className = `message ${type}`;
+            msgDiv.textContent = message;
+            chatBox.appendChild(msgDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function handleSend() {
+            const message = messageInput.value.trim();
             if (!message) return;
 
-            let allow = false;
-
-            // Frontend sensitive check (emails)
-            if (/[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+/.test(message)) {
-                allow = confirm("Sensitive information detected! Allow sharing?");
+            // Check for sensitive info (emails)
+            const sensitiveRegex = /[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+/;
+            if (sensitiveRegex.test(message)) {
+                pendingMessage = message;
+                popupText.textContent = "Sensitive information detected! Allow sharing?";
+                popup.classList.remove("hidden");
+            } else {
+                sendToServer(message, "safe");
             }
 
+            messageInput.value = "";
+        }
+
+        function confirmSend() {
+            sendToServer(pendingMessage, "sensitive");
+            pendingMessage = "";
+            popup.classList.add("hidden");
+        }
+
+        function closePopup() {
+            pendingMessage = "";
+            popup.classList.add("hidden");
+        }
+
+        async function sendToServer(message, type) {
             const response = await fetch("/send_message", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message, allow })
+                body: JSON.stringify({ message, allow: type === "sensitive" })
             }).then(res => res.json());
 
-            const chatBox = document.getElementById("chat-box");
-            const msgDiv = document.createElement("div");
-            msgDiv.className = `message ${response.sensitivity}`;
-            msgDiv.textContent = response.message;
-            chatBox.appendChild(msgDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;
-
-            input.value = "";
+            appendMessage(response.message, response.sensitivity);
         }
     </script>
 </body>
